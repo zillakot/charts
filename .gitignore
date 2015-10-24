@@ -1,2 +1,11 @@
-node_modules
+node_modules/
+build/
+.idea*
 
+.DS_Store
+
+.gobble*
+
+jsconfig.json
+
+npm-debug.log*
