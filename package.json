@@ -10,8 +10,6 @@
     "nvd3": "^1.8.1"
   },
   "devDependencies": {
-    "babelify": "^6.3.0",
-    "gobble": "^0.10.2",
-    "gobble-browserify": "^0.6.1"
+    "webpack": "^1.12.2"
   }
 }
