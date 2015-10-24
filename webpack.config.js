@@ -1,7 +1,12 @@
 // webpack.config.js
 module.exports = {
-entry: './main.js',
-output: {
-filename: 'bundle.js'
-}
+    entry: './src/js/main.js',
+    output: {
+        filename: './build/bundle.js'
+    },
+    module: {
+        loaders: [
+            { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader"}
+        ]
+    }
 };
