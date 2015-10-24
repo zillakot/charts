@@ -1,37 +1,55 @@
 // main.jsx
-import React from 'react';
-import ReactDOM  from 'react-dom';
 import D3 from 'd3';
-import ReactD3 from 'react-d3-components';
-import CrossFilter from 'crossfilter';
+import dc from 'dc';
 
 var filename = '0_0_0.json';
 var testData;
-
-ReactDOM.render(
-  <h1>Hello, world!</h1>,
-  document.getElementById('example')
-);
 
 d3.json(filename, function(error, json) {
     testData = json;
     console.log('first line: ' + JSON.stringify(testData[1]));
     console.log('count: ' + testData.length);
+    //d3.select('body').append('p').text("testDataJee8");
 });
 
 
-var BarChart = ReactD3.BarChart;
+d3.csv('comap.csv', function(error, pdata) {
+    //testData = json;
+    console.log('first line: ' + pdata[1]);
+    console.log('count: ' + pdata.length);
+    appendLog(pdata);
 
-var data = [{
-    label: 'somethingA',
-    values: [{x: 'SomethingA', y: 10}, {x: 'SomethingB', y: 4}, {x: 'SomethingC', y: 3}]
-}];
+    var comap = crossfilter(pdata);
+    var all = comap.groupAll();
 
-ReactDOM.render(
-    <BarChart
-        data={data}
-        width={400}
-        height={400}
-        margin={{top: 10, bottom: 50, left: 50, right: 10}}/>,
-    document.getElementById('location')
-);
+
+
+    var asemaDim = comap.dimension(function(d) {
+        return d.Asema
+    });
+
+    var asemaGroup = asemaDim.group().reduceSum(function(d) {
+       return comap.luotsaukset;
+    });
+
+    /*dc.barChart('#location')
+        .width(420)
+        .height(180)
+        .margins({top: 10, right: 50, bottom: 30, left: 40})
+        .dimension(asemaDim)
+        .group(asemaGroup)
+        .elasticY(true)
+        .gap(1)
+        .x(d3.scale.ordinal());
+
+    dc.renderAll();*/
+
+});
+
+function appendLog(data){
+    return d3.select('#example')
+        .data(data)
+        .enter()
+        .append('p')
+        .text(function(d){return JSON.stringify(d);});
+}
