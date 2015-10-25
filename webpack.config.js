@@ -2,11 +2,13 @@
 module.exports = {
     entry: './src/js/main.js',
     output: {
-        filename: './build/bundle.js'
+        path: './build',
+        filename: 'bundle.js'
     },
     module: {
         loaders: [
-            { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader"}
+            { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader"},
+            { test: /\.css$/, loader: "style-loader!css-loader" }
         ]
     }
 };
