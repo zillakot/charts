@@ -6,18 +6,8 @@ import nvd3 from 'nvd3';
 var filename = '0_0_0.json';
 var testData;
 
-/*d3.json(filename, function(error, json) {
-    testData = json;
-    console.log('first line: ' + JSON.stringify(testData[1]));
-    console.log('asema: ' + testData[1].Asema);
-    //d3.select('body').append('p').text("testDataJee8");
-});*/
-
 d3.csv('comap.csv', function(error, pdata) {
-    //testData = json;
-    //console.log('first line: ' + JSON.stringify(pdata[1]));
-    console.log('count: ' + pdata.length);
-    //appendLog(pdata);
+
     pdata.forEach(function(d){
         d.rpm = parseFloat(d.rpm);
         d.kulutus = parseFloat(d.kulutus);
@@ -31,12 +21,12 @@ d3.csv('comap.csv', function(error, pdata) {
     var cf = dc.crossfilter(pdata);
     var all = cf.groupAll();
 
-    var asemaDim = cf.dimension(d => d.asema );
-    var nimiDim = cf.dimension(function(d) { return d.nimi; });
-    var laivaDim = cf.dimension(function(d) { return d.laiva; });
-    var rpmDim = cf.dimension(function(d) { return d.rpm; });
+    var asemaDim = cf.dimension(d => d.asema);
+    var nimiDim = cf.dimension(d => d.laiva);
+    var laivaDim = cf.dimension(d => d.laiva);
+    var rpmDim = cf.dimension(d =>d.rpm);
 
-    var asemaGroup = asemaDim.group().reduceSum(function(d) { return d.luotsaukset; });
+    var asemaGroup = asemaDim.group().reduceSum(d => d.luotsaukset);
 
     var rpmGroup = rpmDim.group().reduce(
         reduceAvgAdd('kulutus'),
@@ -56,14 +46,6 @@ d3.csv('comap.csv', function(error, pdata) {
         reduceAvgInit()
     );
 
-    var a = asemaDim.group().top(Infinity);
-
-    a.forEach(function(p,i){
-        console.log(p.key + ": " + p.value);
-    });
-
-    console.log(JSON.stringify(a));
-
     dc.pieChart("#la")
         .width(400)
         .height(200)
@@ -71,13 +53,13 @@ d3.csv('comap.csv', function(error, pdata) {
         .group(asemaGroup)
         .innerRadius(50);
 
-    BarChart(nimiDim, laivaLuotsauksetGroup, '#lv', 'Laiva', 'Luotsaukset')
-        .valueAccessor(function(p){return p.value.avg;});
-    BarChart(laivaDim, laivaNopeusGroup, '#ln', 'Laiva', 'Keskinopeus')
-        .valueAccessor(function(p){return p.value.avg;});
+    barChart(nimiDim, laivaLuotsauksetGroup, '#lv', 'Laiva', 'Luotsaukset')
+        .valueAccessor(p => p.value.avg);
+    barChart(laivaDim, laivaNopeusGroup, '#ln', 'Laiva', 'Keskinopeus')
+        .valueAccessor(p => p.value.avg);
 
-    BarChart(rpmDim, rpmGroup, '#rpm', 'RPM', 'Kulutus')
-        .valueAccessor(function(p){return p.value.sum;})
+    barChart(rpmDim, rpmGroup, '#rpm', 'RPM', 'Kulutus')
+        .valueAccessor(p => p.value.sum)
         .width(1200)
         .height(200);
 
@@ -85,8 +67,7 @@ d3.csv('comap.csv', function(error, pdata) {
         .dimension(cf)
         .group(all)
         .html({
-            some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records' +
-            ' | <a href=\'javascript:dc.filterAll(); dc.renderAll();\'\'>Reset All</a>',
+            some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records',
             all: 'All records selected. Please click on the graph to apply filters.'
         });
 
@@ -102,7 +83,7 @@ function appendLog(data){
         .text(function(d){return JSON.stringify(d);});
 }
 
-function BarChart(dim, group, id, xlabel, ylabel, valueAccessor){
+function barChart(dim, group, id, xlabel, ylabel, valueAccessor){
     var c = dc.barChart(id)
         .width(400)
         .height(200)
