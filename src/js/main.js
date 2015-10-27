@@ -13,7 +13,6 @@ var testData;
     //d3.select('body').append('p').text("testDataJee8");
 });*/
 
-
 d3.csv('comap.csv', function(error, pdata) {
     //testData = json;
     //console.log('first line: ' + JSON.stringify(pdata[1]));
@@ -32,7 +31,7 @@ d3.csv('comap.csv', function(error, pdata) {
     var cf = dc.crossfilter(pdata);
     var all = cf.groupAll();
 
-    var asemaDim = cf.dimension(function(d) { return d.asema; });
+    var asemaDim = cf.dimension(d => d.asema );
     var nimiDim = cf.dimension(function(d) { return d.nimi; });
     var laivaDim = cf.dimension(function(d) { return d.laiva; });
     var rpmDim = cf.dimension(function(d) { return d.rpm; });
@@ -56,7 +55,6 @@ d3.csv('comap.csv', function(error, pdata) {
         reduceAvgRemove('luotsaukset'),
         reduceAvgInit()
     );
-
 
     var a = asemaDim.group().top(Infinity);
 
