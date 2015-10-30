@@ -2,9 +2,27 @@
 import D3 from 'd3';
 import dc from 'dc';
 import nvd3 from 'nvd3';
+import google from 'google-maps';
 
 var filename = '0_0_0.json';
 var testData;
+
+google.LIBRARIES = ['geometry', 'drawing'];
+
+google.load(google => {
+    new google.maps.Map(document.getElementById('map_in'), {
+        center: {lat: 60.192, lng: 24.946},
+        scrollwheel: true,
+        zoom: 10
+    });
+});
+
+/*var goo  = google.maps,
+    map_in = new goo.Map(document.getElementById('map_in'),
+        { zoom: 12,
+            center: new goo.LatLng(32.344, 51.048)
+        });
+*/
 
 d3.csv('comap.csv', function(error, pdata) {
 
