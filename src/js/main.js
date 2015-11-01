@@ -18,7 +18,7 @@ google.load(google => {
 
     d3.json(filename, pdata => {
 
-        var data = parseAis(pdata);//.slice(0,1000));
+        var data = parseAis(pdata.slice(0,10));
         //data.forEach(x => {console.log(JSON.stringify(x))});
         /*var cf = dc.crossfilter(data);
         var mmsiDim = cf.dimension(x => x.mmsi);
@@ -76,6 +76,8 @@ function parseAis(data){
     data.forEach(d => {
         d.lat = parseFloat(d.lat);
         d.lon = parseFloat(d.lon);
+        var time = d.nmea.split(" ");
+        d.dateTime = new Date(time[2] + " " + time[3] + " " + time[5] + " " + time[4]);
         return d;
     });
     return data;
