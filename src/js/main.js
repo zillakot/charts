@@ -1,5 +1,5 @@
 // main.jsx
-import D3 from 'd3';
+import d3 from 'd3';
 import dc from 'dc';
 import nvd3 from 'nvd3';
 import google from 'google-maps';
@@ -10,12 +10,76 @@ var testData;
 google.LIBRARIES = ['geometry', 'drawing'];
 
 google.load(google => {
-    new google.maps.Map(document.getElementById('map_in'), {
+    var map = new google.maps.Map(d3.select("#map_in").node(), {
         center: {lat: 60.192, lng: 24.946},
         scrollwheel: true,
         zoom: 10
     });
+
+    d3.json(filename, pdata => {
+
+        var data = parseAis(pdata);//.slice(0,1000));
+        //data.forEach(x => {console.log(JSON.stringify(x))});
+        /*var cf = dc.crossfilter(data);
+        var mmsiDim = cf.dimension(x => x.mmsi);
+        var mmsigroup = mmsiDim.group().top(Infinity);*/
+
+        var overlay = new google.maps.OverlayView();
+
+        // Add the container when the overlay is added to the map.
+        overlay.onAdd = function () {
+            var layer = d3.select(this.getPanes().overlayLayer)
+                .append("div")
+                .attr("class", "stations");
+
+            // Draw each marker as a separate SVG element.
+            // We could use a single SVG, but what size would it have?
+            overlay.draw = function () {
+                var projection = this.getProjection();
+
+                var marker = layer.selectAll("svg")
+                    .data(d3.entries(data))
+                    .each(transform) // update existing markers
+                    .enter().append("svg:svg")
+                    .each(transform)
+                    .attr("class", "marker");
+
+                // Add a circle.
+                marker.append("svg:circle")
+                    .attr("r", 4.5)
+                    .attr("cx", 25)
+                    .attr("cy", 25);
+
+                // Add a label.
+                marker.append("svg:text")
+                    .attr("x", 33)
+                    .attr("dy", 28)
+                    .text(function (d) {
+                        return d.value.mmsi;
+                    });
+
+                function transform(d) {
+                    d = new google.maps.LatLng(d.value.lat, d.value.lon);
+                    d = projection.fromLatLngToDivPixel(d);
+                    return d3.select(this)
+                        .style("left", (d.x - 25) + "px")
+                        .style("top", (d.y - 25) + "px");
+                }
+            };
+        };
+        // Bind our overlay to the map…
+        overlay.setMap(map);
+    });
 });
+
+function parseAis(data){
+    data.forEach(d => {
+        d.lat = parseFloat(d.lat);
+        d.lon = parseFloat(d.lon);
+        return d;
+    });
+    return data;
+}
 
 /*var goo  = google.maps,
     map_in = new goo.Map(document.getElementById('map_in'),
