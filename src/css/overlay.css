@@ -10,14 +10,30 @@ html, body, #map {
 }
 
 .stations svg {
-    width:50px;
-    height:50px;
-    padding-right: 100px;
-    font: 10px sans-serif;
+    width:40px;
+    height:40px;
+    padding-right: 80px;
+    font: 12px sans-serif;
 }
 
 .stations circle {
-    fill: brown;
+    fill: blue;
     stroke: black;
-    stroke-width: 1.5px;
+    stroke-width: 1px;
+}
+
+.stations circle:hover {
+    fill: red;
+    cursor: pointer;
+}
+
+.stations rect {
+    fill: green;
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.stations rect:hover {
+    fill: red;
+    cursor: pointer;
 }
