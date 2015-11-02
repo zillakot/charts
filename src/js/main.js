@@ -5,7 +5,13 @@ import nvd3 from 'nvd3';
 import google from 'google-maps';
 import overlayStyle from '../css/overlay.css';
 import dcStyle from '../css/dc.css';
+import veneet from '../data/veneet.csv';
 
+veneet.forEach(x => {
+    x.mmsi = parseInt(x.mmsi);
+    console.log(JSON.stringify(x))
+    return x;
+});
 //var filename = '../data/0_0_0.json';
 //var csvfile = '../data/comap.csv';
 
@@ -126,6 +132,8 @@ function parseAis(data){
         d.lon = parseFloat(d.lon);
         var time = d.nmea.split(" ");
         d.dateTime = new Date(time[2] + " " + time[3] + " " + time[5] + " " + time[4]);
+        delete d.nmea;
+        console.log(JSON.stringify(d));
         return d;
     });
     return data;
