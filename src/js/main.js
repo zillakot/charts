@@ -20,8 +20,6 @@ var stations = [{key: "1", name: "Harmaja", lat: 60.104794, lon: 24.9747871 }];
 
 google.LIBRARIES = ['geometry', 'drawing'];
 
-d3.select("#example").append("input")
-
 google.load(google => {
     var map = new google.maps.Map(d3.select("#map").node(), {
         center: {lat: 60.192, lng: 24.946},
@@ -61,12 +59,10 @@ google.load(google => {
                 .on("click", d => {
                     asemaDim.filter(d.value.name);
                     dc.redrawAll();
-                    console.log(d.value.name);
                     return d;
                 }).on("dblclick", d => {
                     asemaDim.filterAll();
                     dc.redrawAll();
-                    console.log(d.value.name);
                     return d;
                 });
 
@@ -92,7 +88,16 @@ google.load(google => {
                 .attr("cy", 10)
                 .on("mouseover", expand)
                 .on("mouseout", collapse)
-                .on("click", d => console.log(d.value.lat + " " + d.value.lon));
+                .on("click", d => {
+                    log(d);
+                    boatEffDim.filter(d.value.name.substr(d.value.name.length - 4));
+                    dc.redrawAll();
+                    return d;
+                }).on("dblclick", d => {
+                    boatEffDim.filterAll();
+                    dc.redrawAll();
+                    return d;
+                });
 
             // Add a label.
             marker.append("svg:text")
@@ -137,7 +142,6 @@ function parseAis(data){
         d.dateTime = new Date(time[2] + " " + time[3] + " " + time[5] + " " + time[4]);
         delete d.nmea;
         d.name = veneet.filter(x => d.mmsi == x.mmsi)[0].name;
-        console.log(JSON.stringify(d));
         return d;
     });
     return data;
@@ -154,9 +158,11 @@ pdata.forEach(function(d){
     d.rpm = parseFloat(d.rpm);
     d.kulutus = parseFloat(d.kulutus);
     d.kayttoaste = parseFloat(d.kayttoaste);
-    d.nopeus = parseFloat(d.nopeus);
     d.luotsaukset = parseInt(d.luotsaukset);
     d.mailiaLitra = parseFloat(d.kml)*0.62137;
+    d.kuljettu = veneet.filter(x => d.laiva == x.id)[0].kuljettu;
+    d.huolto = veneet.filter(x => d.laiva == x.id)[0].huolto;
+    d.mlh = parseFloat(d.mlh);
     return d;
 });
 
@@ -168,7 +174,7 @@ var asemaDim = cf.dimension(d => d.asema);
 var rpmDim = cf.dimension(d =>d.rpm);
 var rpmGroup = rpmDim.group().reduce(...avgReducer('kulutus'));
 
-var defaultChartMargins = {top: 10, right: 50, bottom: 30, left: 50};
+var defaultChartMargins = {top: 20, right: 50, bottom: 0, left: 0};
 
 var boatTripDim = cf.dimension(d => d.laiva);
 var boatTripGroup = boatTripDim.group().reduceSum(d => d.luotsaukset);
@@ -204,13 +210,9 @@ var chart2 = dc.barChart('#chart2')
     .group(boatEffGroup)
     .valueAccessor(p => p.value.avg);
 
-var veneData = dc.crossfilter(veneet);
-var vall = veneData.groupAll();
+var huoltoDim = cf.dimension(x => x.laiva);
+var huoltoGroup = huoltoDim.group().reduce(...avgReducer('kuljettu'));
 
-var huoltoDim = veneData.dimension(x => x.id);
-var huoltoGroup = huoltoDim.group().reduceSum(d => d.kuljettu);
-
-huoltoDim.filter('L139');
 var chart3 = dc.barChart('#chart3')
     .width(400)
     .height(300)
@@ -220,10 +222,11 @@ var chart3 = dc.barChart('#chart3')
     .yAxisLabel("Overhaul")
     .xAxisLabel("Boat")
     .dimension(huoltoDim)
-    .group(huoltoGroup);
+    .group(huoltoGroup)
+    .valueAccessor(x => x.value.avg);
 
 var filters = [];
-
+/*
 chart2.onClick = (d => {
     return function() {
         var a = arguments[0];
@@ -241,7 +244,7 @@ chart3.onClick = (d => {
         return  d.apply(this, arguments);
     }
 })(chart3.onClick);
-
+*/
 //chart4: fault per boat
 //chart5: driving style
 //chart6: efficiency per rpm
@@ -250,7 +253,7 @@ var rpmEffDim = cf.dimension(d =>d.rpm);
 var rpmEffGroup = rpmEffDim.group().reduce(...avgReducer('mailiaLitra'));
 
 var chart6 = dc.lineChart('#chart6')
-    .width(1200)
+    .width(600)
     .height(300)
     .margins(defaultChartMargins)
     .x(d3.scale.linear().domain([600,1900]))
@@ -260,6 +263,19 @@ var chart6 = dc.lineChart('#chart6')
     .group(rpmEffGroup)
     .valueAccessor(x => x.value.avg);
 
+var rpmNmDim = cf.dimension(d =>d.rpm);
+var rpmNmGroup = rpmNmDim.group().reduce(...avgReducer('mlh'));
+
+var chart7 = dc.lineChart('#chart7')
+    .width(600)
+    .height(300)
+    .margins(defaultChartMargins)
+    .x(d3.scale.linear().domain([600,1900]))
+    .yAxisLabel("m_l/h <- mikä on")
+    .xAxisLabel("RPM")
+    .dimension(rpmNmDim)
+    .group(rpmNmGroup)
+    .valueAccessor(x => x.value.avg);
 /*
 dc.pieChart("#chart1")
     .width(400)
