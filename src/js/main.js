@@ -33,7 +33,7 @@ google.load(google => {
     var cfdata = crossfilter(data);
     var a = cfdata.groupAll();
 
-    var timeDim = cfdata.dimension(x => new Date(x.dateTime).getHours());
+    var timeDim = cfdata.dimension(x => new Date(x.dateTime).getHours()*60 + new Date(x.dateTime).getMinutes());
     var nameDim = cfdata.dimension(x => x.name);
     var nameGroup = nameDim.group().reduce(
         (p, v) => {
@@ -125,7 +125,7 @@ google.load(google => {
                 .on("mouseout", collapse)
                 .on("click", d => {
                     log(d);
-                    boatEffDim.filter(d.value.key.substr(d.value.name.length - 4));
+                    boatEffDim.filter(d.value.key.substr(d.value.key.length - 4));
                     dc.redrawAll();
                     return d;
                 }).on("dblclick", d => {
