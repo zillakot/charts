@@ -30,8 +30,44 @@ google.load(google => {
 
     var pdata = require('../data/0_0_0.json');
     var data = parseAis(pdata.slice(0,100));
+    var cfdata = crossfilter(data);
+    var a = cfdata.groupAll();
+    log(a.values().top(1));
+
+    var timeDim = cfdata.dimension(x => new Date(x.dateTime).getHours());
+    var nameDim = cfdata.dimension(x => x.name);
+    var nameGroup = nameDim.group().reduce(
+        (p, v) => {
+            ++p.count;
+            p.lonLatSum.lon += v.lon;
+            p.lonLatSum.lat += v.lat;
+            p.lonLatAvg.lon = p.lonLatSum.lon / p.count;
+            p.lonLatAvg.lat = p.lonLatSum.lat / p.count;
+            p.name = v.Name;
+            return p;
+        },
+        (p, v) => {
+            --p.count;
+            p.lonLatSum.lon = p.lonLatSum.lon - v.lon;
+            p.lonLatSum.lat = p.lonLatSum.lat - v.lat;
+            p.lonLatAvg.lon = p.count ? p.lonLatSum.lon / p.count : 0;
+            p.lonLatAvg.lat = p.count ? p.lonLatSum.lat / p.count : 0;
+            p.name = v.Name;
+            return p;
+        },
+        function() {
+            return {count:0, avg: 0, lonLatSum: {lon: 0, lat: 0}, lonLatAvg: {lon:0, lat:0}, name: ""}
+        }
+    );
+
 
     var overlay = new google.maps.OverlayView();
+
+    d3.select("#nRadius").on("input", function() {
+        timeDim.filterExact(this.value);
+        log(nameGroup.top(Infinity).map(x => x.value));
+        overlay.Draw();
+    });
 
     // Add the container when the overlay is added to the map.
     overlay.onAdd = function () {
@@ -142,6 +178,7 @@ function parseAis(data){
         d.dateTime = new Date(time[2] + " " + time[3] + " " + time[5] + " " + time[4]);
         delete d.nmea;
         d.name = veneet.filter(x => d.mmsi == x.mmsi)[0].name;
+        d.hour = new Date(d.dateTime).getHours();
         return d;
     });
     return data;
