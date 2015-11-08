@@ -29,10 +29,9 @@ google.load(google => {
     });
 
     var pdata = require('../data/0_0_0.json');
-    var data = parseAis(pdata.slice(0,100));
+    var data = parseAis(pdata);
     var cfdata = crossfilter(data);
     var a = cfdata.groupAll();
-    log(a.values().top(1));
 
     var timeDim = cfdata.dimension(x => new Date(x.dateTime).getHours());
     var nameDim = cfdata.dimension(x => x.name);
@@ -66,7 +65,7 @@ google.load(google => {
     d3.select("#nRadius").on("input", function() {
         timeDim.filterExact(this.value);
         log(nameGroup.top(Infinity).map(x => x.value));
-        overlay.Draw();
+        overlay.draw();
     });
 
     // Add the container when the overlay is added to the map.
@@ -82,9 +81,9 @@ google.load(google => {
 
             var station = layer.selectAll("svg")
                 .data(d3.entries(stations))
-                .each(transform)
+                .each(transformStation)
                 .enter().append("svg:svg")
-                .each(transform)
+                .each(transformStation)
                 .attr("class", "station");
 
             station.append("svg:rect")
@@ -111,7 +110,7 @@ google.load(google => {
 
             var marker = layer.selectAll("svg")
                 .filter(x => x.value.name != "Harmaja")
-                .data(d3.entries(data))
+                .data(d3.entries(nameGroup.top(10)))//data))
                 .each(transform) // update existing markers
                 .enter().append("svg:svg")
                 .each(transform)
@@ -126,7 +125,7 @@ google.load(google => {
                 .on("mouseout", collapse)
                 .on("click", d => {
                     log(d);
-                    boatEffDim.filter(d.value.name.substr(d.value.name.length - 4));
+                    boatEffDim.filter(d.value.key.substr(d.value.name.length - 4));
                     dc.redrawAll();
                     return d;
                 }).on("dblclick", d => {
@@ -140,11 +139,20 @@ google.load(google => {
                 .attr("x", 25)
                 .attr("dy", 20)
                 .text(function (d) {
-                    return d.value.name;
+                    return d.value.key;
                 });
 
             function transform(d) {
-                console.log(d.value.lat + " " + d.value.lon);
+                log(d);
+                d = new google.maps.LatLng(d.value.value.lonLatAvg.lat, d.value.value.lonLatAvg.lon);
+                d = projection.fromLatLngToDivPixel(d);
+                return d3.select(this)
+                    .style("left", (d.x - 25) + "px")
+                    .style("top", (d.y - 25) + "px");
+            }
+
+            function transformStation(d) {
+                log(d);
                 d = new google.maps.LatLng(d.value.lat, d.value.lon);
                 d = projection.fromLatLngToDivPixel(d);
                 return d3.select(this)
