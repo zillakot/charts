@@ -236,10 +236,8 @@ var chart1 = dc.barChart('#chart1')
     .dimension(boatTripDim)
     .group(boatTripGroup);
 
-
 var boatEffDim = cf.dimension(d => d.laiva);
 var boatEffGroup = boatEffDim.group().reduce(...avgReducer('mailiaLitra'));
-
 
 //chart2: efficiency per boat, barchart
 var chart2 = dc.barChart('#chart2')
@@ -321,6 +319,27 @@ var chart7 = dc.lineChart('#chart7')
     .dimension(rpmNmDim)
     .group(rpmNmGroup)
     .valueAccessor(x => x.value.avg);
+
+var chart67 = dc.compositeChart('#chart67');
+chart67
+    .width(600)
+    .height(300)
+    .margins(defaultChartMargins)
+    .x(d3.scale.linear().domain([600,1900]))
+    .yAxisLabel("y")
+    .xAxisLabel("y")
+    .compose([
+        dc.lineChart(chart67)
+            .dimension(rpmEffDim)
+            .group(rpmEffGroup)
+            .valueAccessor(x => x.value.avg),
+        dc.lineChart(chart67)
+            .dimension(rpmNmDim)
+            .group(rpmNmGroup)
+            .valueAccessor(x => x.value.avg)
+            .useRightYAxis(true)
+    ]);
+
 /*
 dc.pieChart("#chart1")
     .width(400)
